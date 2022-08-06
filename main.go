@@ -39,6 +39,11 @@ func main() {
 	files, err := ioutil.ReadDir(inputDir)
 	handleError(err)
 
+	var (
+		enums       []Enum
+		currentEnum Enum
+	)
+
 	for _, fileInfo := range files {
 		if !fileInfo.IsDir() && strings.HasSuffix(fileInfo.Name(), ".cs") {
 			fpath := path.Join(inputDir, fileInfo.Name())
@@ -46,11 +51,6 @@ func main() {
 			handleError(err)
 			defer file.Close()
 			scanner := bufio.NewScanner(file)
-
-			var (
-				enums       []Enum
-				currentEnum Enum
-			)
 
 			for scanner.Scan() {
 				line := scanner.Text()
@@ -81,22 +81,22 @@ func main() {
 					currentEnum.KeyValuePairs = append(currentEnum.KeyValuePairs, kvPair)
 				}
 			}
-
-			enumTemplate := template.New("enum.go.tmpl")
-			_, err = enumTemplate.ParseFiles("enum.go.tmpl")
-			handleError(err)
-
-			outFile, err := os.Create(outFileName)
-			handleError(err)
-			defer outFile.Close()
-
-			err = enumTemplate.Execute(outFile, map[string]interface{}{
-				"PackageName": pkg,
-				"enums":       enums,
-			})
-			handleError(err)
 		}
 	}
+
+	enumTemplate := template.New("enum.go.tmpl")
+	_, err = enumTemplate.ParseFiles("enum.go.tmpl")
+	handleError(err)
+
+	outFile, err := os.Create(outFileName)
+	handleError(err)
+	defer outFile.Close()
+
+	err = enumTemplate.Execute(outFile, map[string]interface{}{
+		"PackageName": pkg,
+		"enums":       enums,
+	})
+	handleError(err)
 }
 
 func handleError(err error) {

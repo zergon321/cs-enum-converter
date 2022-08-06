@@ -1,0 +1,11 @@
+package {{ .PackageName }}
+
+{{ range $enum := .enums }}
+type {{ $enum.Name }} {{ $enum.GoType }}
+
+const (
+    {{ range $member := $enum.KeyValuePairs }}
+    {{- $enum.Name }}{{ $member.Name }} {{ $enum.Name }} = {{ $enum.Name }}({{ $member.Value }})
+    {{ end -}}
+)
+{{ end }}
